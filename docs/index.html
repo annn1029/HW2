@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HW2 伊斯坦堡房價多元線性回歸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1f24; --muted:#5d6670; --line:#e3e4e0;
+  --acc:#2563eb; --acc-soft:#e8efff; --warm:#f97316; --ok:#15803d; --tag:#fff4e5; --tag-ink:#9a4a00;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --panel:#1b1e23; --ink:#e7e9ec; --muted:#9aa3ad; --line:#2c3138;
+    --acc:#7aa2ff; --acc-soft:#1e2a44; --warm:#fb923c; --ok:#4ade80; --tag:#3a2a14; --tag-ink:#ffcf99;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --panel:#1b1e23; --ink:#e7e9ec; --muted:#9aa3ad; --line:#2c3138;
+  --acc:#7aa2ff; --acc-soft:#1e2a44; --warm:#fb923c; --ok:#4ade80; --tag:#3a2a14; --tag-ink:#ffcf99;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 "Noto Sans TC",system-ui,sans-serif}
+a{color:var(--acc)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+header.hero{padding:56px 0 28px;border-bottom:1px solid var(--line)}
+.kicker{font:600 13px/1 "JetBrains Mono",monospace;letter-spacing:.08em;color:var(--acc);text-transform:uppercase}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.25;margin:12px 0 10px}
+.sub{color:var(--muted);max-width:760px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font:600 26px/1.2 "JetBrains Mono",monospace}
+.stat span{color:var(--muted);font-size:13px}
+nav.toc{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:18px;overflow-x:auto;padding:10px 16px;white-space:nowrap;font-size:14px}
+nav.toc a{color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--acc)}
+section{padding:40px 0 8px}
+h2{font-size:24px;margin:0 0 6px;display:flex;align-items:baseline;gap:10px}
+h2 .n{font:600 14px "JetBrains Mono",monospace;color:var(--acc)}
+h3{font-size:18px;margin:26px 0 6px}
+p,li{color:var(--ink)}
+.muted{color:var(--muted)}
+figure{margin:18px 0;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+figure img{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:#555;padding:6px 4px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--panel)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:var(--acc-soft);font-weight:600}
+td.num{font-family:"JetBrains Mono",monospace;text-align:right}
+tr.best td{font-weight:700}
+.tag{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;margin-right:6px}
+.callout{border-left:4px solid var(--warm);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0}
+.callout.ai{border-color:var(--acc)}
+.placeholder{border:2px dashed var(--warm);border-radius:10px;padding:16px;background:var(--panel)}
+code,.mono{font-family:"JetBrains Mono",monospace;font-size:.92em}
+/* predictor */
+.pred{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.chk input{width:auto}
+.out{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.out .box{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.out .box b{display:block;font:600 24px "JetBrains Mono",monospace;color:var(--acc)}
+.bar{position:relative;height:14px;background:var(--acc-soft);border-radius:7px;margin:18px 0 4px}
+.bar .pi{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--acc) 30%,transparent);border-radius:7px}
+.bar .ci{position:absolute;top:0;bottom:0;background:var(--acc);opacity:.75;border-radius:7px}
+.bar .pt{position:absolute;top:-4px;width:3px;height:22px;background:var(--warm)}
+footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="kicker">IoT · HW2 · Multiple Linear Regression · CRISP-DM</div>
+  <h1>伊斯坦堡公寓房價預測：<br>多元線性回歸與預測區間</h1>
+  <p class="sub">以 Kaggle「Istanbul Apartment Prices 2026」資料集（24,767 筆、30 欄）建立可解釋的線性回歸估價模型。依 CRISP-DM 六階段完成資料理解、清理、特徵選擇、評估，並部署為下方的線上估價器。</p>
+  <div class="stats" id="stats"></div>
+  <p class="muted" style="margin-top:14px;font-size:14px">資料來源：<a href="https://www.kaggle.com/datasets/brahimenesulusoy/istanbul-apartment-prices-2026" target="_blank" rel="noopener">kaggle.com/datasets/brahimenesulusoy/istanbul-apartment-prices-2026</a>
+  ・ 原始碼：<a href="#" id="repoLink">GitHub repo</a> ・ <a href="#" id="nbLink">Notebook</a></p>
+</div></header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#bu">1 商業理解</a><a href="#du">2 資料理解</a><a href="#dp">3 資料準備</a><a href="#mo">4 建模</a><a href="#ev">5 評估</a><a href="#de">6 部署・估價器</a><a href="#ai">AI 協助</a>
+</div></nav>
+
+<main class="wrap">
+
+<div class="callout ai"><span class="tag">GPT 輔助內容</span>本頁的程式架構、特徵工程設計、圖表程式與報告文字初稿由 AI 助理協助產生（本作業使用 Claude），作者負責檢閱、執行與修正。對話紀錄 PDF 見 <code>docs/chat_log.pdf</code>。</div>
+
+<section id="bu">
+  <h2><span class="n">01</span>Business Understanding 商業理解</h2>
+  <p>伊斯坦堡房價在高通膨下劇烈波動，買方、賣方與仲介需要一個<strong>透明、可解釋</strong>的估價工具。本作業的目標是以面積、房間數、樓層、屋齡、行政區、暖氣、產權等屬性預測公寓售價，並以<strong>預測區間</strong>表達單一物件價格的不確定性。</p>
+  <ul>
+    <li><b>成功標準</b>：測試集 R²（log 尺度）≥ 0.75；95% 預測區間的實際覆蓋率接近 95%；係數可解讀。</li>
+    <li><b>為何用線性回歸</b>：係數即各屬性的邊際價值；對價格取 log 後，係數代表百分比變化，符合房價右偏的特性。</li>
+  </ul>
+</section>
+
+<section id="du">
+  <h2><span class="n">02</span>Data Understanding 資料理解</h2>
+  <p>資料共 30 欄，包含數值（面積、房間、樓層、屋齡、衛浴數、管理費）與類別（38 個行政區、583 個街區、暖氣、燃料、產權、家具、使用狀態、方位等）。主要發現：</p>
+  <ul>
+    <li><code>price</code> 極度右偏（中位數約 675 萬 TRY，最大值 115 億，顯然是輸入錯誤）→ 取 <code>log(price)</code> 後接近常態。</li>
+    <li><code>price_per_sqm</code> 等於 price ÷ 面積，屬於<b>資料洩漏</b>，必須刪除。</li>
+    <li>6 個欄位缺值超過 50%；<code>rooms</code>=114、<code>total_floors</code>=450、<code>building_age</code>=400 等為不合理值。</li>
+    <li>行政區之間的房價中位數差距可達 5 倍以上，地段是最重要的變數。</li>
+  </ul>
+  <div class="grid2">
+    <figure><img src="assets/01_missing.png" alt="各欄位缺值比例"><figcaption>各欄位缺值比例</figcaption></figure>
+    <figure><img src="assets/02_price_dist.png" alt="價格與 log 價格分布"><figcaption>原始價格右偏；log 轉換後接近常態</figcaption></figure>
+  </div>
+  <figure><img src="assets/04_district_box.png" alt="各行政區 log 價格箱型圖"><figcaption>各行政區的 log(price)，依中位數排序</figcaption></figure>
+  <div class="grid2">
+    <figure><img src="assets/03_corr.png" alt="數值特徵相關係數矩陣"><figcaption>數值特徵相關係數矩陣（log_net_sqm 與 gross_sqm 高度相關）</figcaption></figure>
+    <figure><img src="assets/05_scatter_area.png" alt="log 價格對 log 面積散佈圖"><figcaption>log(price) 與 log(淨面積) 大致呈線性關係</figcaption></figure>
+  </div>
+</section>
+
+<section id="dp">
+  <h2><span class="n">03</span>Data Preparation 資料準備</h2>
+  <div class="tbl"><table>
+    <tr><th>步驟</th><th>做法</th><th>理由</th></tr>
+    <tr><td>刪除欄位</td><td>price_per_sqm、listing_id、時間戳記、complex_name（缺 85%）、neighborhood（583 類）</td><td>洩漏、ID、高基數</td></tr>
+    <tr><td>價格離群值</td><td>只保留 0.5%–99.5% 分位數</td><td>去除輸入錯誤</td></tr>
+    <tr><td>合理範圍</td><td>25 ≤ net_sqm ≤ 500、net ≤ gross、rooms ≤ 10、樓層 ≤ 總樓層 等</td><td>排除物理上不合理的資料</td></tr>
+    <tr><td>缺值</td><td>數值以中位數填補並加缺值旗標；類別補上 <code>Missing</code></td><td>保留樣本與「缺值本身」的資訊</td></tr>
+    <tr><td>衍生特徵</td><td>log_net_sqm、floor_ratio、faces_south、n_directions、has_maint_fee</td><td>捕捉非線性與方位價值</td></tr>
+    <tr><td>編碼與切分</td><td>One-hot（drop_first），稀有類別併為 Other；訓練/測試 80/20</td><td>線性模型需要數值輸入</td></tr>
+  </table></div>
+  <p class="muted">清理後剩 24,403 筆（只刪除 1.5%），共 22 個特徵群組，展開為 70 個欄位。</p>
+</section>
+
+<section id="mo">
+  <h2><span class="n">04</span>Modeling 建模與特徵選擇</h2>
+  <p>依序建立：① <b>簡單線性回歸</b> log(price) ~ log(net_sqm) 作為基準；② <b>全特徵多元線性回歸</b>；③ 以三種方法進行<b>特徵選擇</b>：</p>
+  <ul>
+    <li><b>Forward Stepwise（AIC）</b>：以特徵群組為單位（一個類別變數的所有 dummy 視為一組），每一步加入能讓 AIC 下降最多的群組，直到 ΔAIC &lt; 2 為止。</li>
+    <li><b>RFE</b>：以標準化後的線性回歸，反覆刪除係數最小的欄位，最後保留 30 個。</li>
+    <li><b>LassoCV</b>：用 L1 正則化搭配 5-fold CV 選擇 α，係數被壓成 0 的欄位視為不重要。</li>
+  </ul>
+  <figure><img src="assets/06_stepwise.png" alt="Stepwise 選擇過程"><figcaption>Stepwise 每一步加入的特徵群組，以及 adjusted R² 與 AIC 的變化：行政區最先被選入，單獨就解釋 43% 的變異</figcaption></figure>
+  <p id="dropped" class="muted"></p>
+  <figure><img src="assets/07_lasso_coef.png" alt="Lasso 標準化係數"><figcaption>Lasso 標準化係數前 20 名（藍色＝正向、橘色＝負向）</figcaption></figure>
+</section>
+
+<section id="ev">
+  <h2><span class="n">05</span>Evaluation 評估</h2>
+  <h3>模型比較（測試集，n = <span id="nte"></span>）</h3>
+  <div class="tbl"><table id="cmp"></table></div>
+  <p class="muted" style="font-size:14px">R²／RMSE／MAE 皆在 log 尺度計算；MAPE、MedAPE 是轉回里拉後的百分比誤差；CV5 為 5-fold 交叉驗證的 R²。</p>
+
+  <h3>預測圖（含 95% 信賴區間與預測區間）</h3>
+  <p><b>信賴區間 (CI)</b> 描述「平均價格」的不確定性，只來自係數的估計誤差；<b>預測區間 (PI)</b> 描述「單一物件價格」的不確定性，還多加了個別物件的誤差 σ²，所以寬得多。測試集上 95% PI 的實際覆蓋率為 <b id="cov"></b>，非常接近理論值 95%。</p>
+  <figure><img src="assets/09_pred_interval_test.png" alt="測試集預測與信賴區間、預測區間"><figcaption>隨機抽 150 筆測試資料（依預測值排序）：深色帶為 95% CI、淺色帶為 95% PI、橘點為實際價格</figcaption></figure>
+  <figure><img src="assets/11_effect_area_district.png" alt="三個行政區的價格對面積曲線"><figcaption>典型公寓在三個行政區中，價格隨淨面積的變化（深色帶＝CI、淺色帶＝PI）</figcaption></figure>
+  <div class="grid2">
+    <figure><img src="assets/10_actual_vs_pred.png" alt="實際值對預測值"><figcaption>實際價格與預測價格（log-log 座標）</figcaption></figure>
+    <figure><img src="assets/08_residuals.png" alt="殘差診斷"><figcaption>殘差診斷：殘差對預測值、Q-Q 圖、殘差分布</figcaption></figure>
+  </div>
+  <h3>結論與限制</h3>
+  <ul>
+    <li>多元線性回歸將 R² 從 0.26（只用面積）提升到約 0.80，主要貢獻來自<b>行政區</b>、面積、屋齡、暖氣與產權。</li>
+    <li>Stepwise 刪除 4 個沒有貢獻的群組後，表現與全模型相同但更精簡；Lasso 的結果也幾乎一樣，表示選擇結果穩定。RFE 以單一欄位為單位刪除，會把行政區 dummy 拆開，所以表現較差。</li>
+    <li>VIF 都小於 10，共線性在可接受範圍；殘差大致對稱，但兩端尾部略厚，代表仍有少數極端物件無法解釋。</li>
+    <li>限制：沒有使用街區等更細的地段資訊，也沒有加入交互作用項（例如面積 × 行政區）；用 exp(ŷ) 轉回里拉得到的是「中位數」預測，而不是平均數。</li>
+  </ul>
+</section>
+
+<section id="de">
+  <h2><span class="n">06</span>Deployment 部署：線上估價器</h2>
+  <p class="muted">最終模型（Stepwise-AIC）的係數與共變異數矩陣已匯出為 <code>model.js</code>，估價在瀏覽器端完成，不需要伺服器：ŷ = xᵀβ，95% PI = ŷ ± t·√(σ² + xᵀ Cov(β) x)，再取 e<sup>(·)</sup> 轉回里拉。</p>
+  <div class="pred">
+    <div class="form" id="form"></div>
+    <div class="out">
+      <div class="box"><span class="muted">預測價格（中位數）</span><b id="o_pt">–</b></div>
+      <div class="box"><span class="muted">95% 信賴區間（平均價格）</span><b id="o_ci" style="font-size:18px">–</b></div>
+      <div class="box"><span class="muted">95% 預測區間（單一物件）</span><b id="o_pi" style="font-size:18px">–</b></div>
+      <div class="box"><span class="muted">每平方公尺單價</span><b id="o_sqm" style="font-size:18px">–</b></div>
+    </div>
+    <div class="bar" id="bar"><div class="pi"></div><div class="ci"></div><div class="pt"></div></div>
+    <div class="muted" style="font-size:12px;display:flex;justify-content:space-between"><span id="b_lo"></span><span>淺色＝PI，深色＝CI，橘線＝點預測</span><span id="b_hi"></span></div>
+  </div>
+</section>
+
+<section id="ai">
+  <h2><span class="n">AI</span>AI 協助紀錄</h2>
+  <h3><span class="tag">GPT 輔助內容</span>AI 協助的範圍</h3>
+  <ul>
+    <li>資料品質檢查：指出 <code>price_per_sqm</code> 的資料洩漏，並提出各欄位的離群值門檻。</li>
+    <li>特徵工程與群組層級的 Stepwise-AIC 演算法、RFE／Lasso 比較的程式碼。</li>
+    <li>以 statsmodels <code>get_prediction().summary_frame()</code> 計算 CI／PI 並畫出預測圖。</li>
+    <li>GitHub Pages 網頁與 JavaScript 估價器（含預測區間公式）。</li>
+    <li>完整對話紀錄：<code>docs/chat_log.pdf</code>。</li>
+  </ul>
+  <h3><span class="tag">NotebookLM 摘要</span>網路上同主題解法的研究摘要</h3>
+  <div class="placeholder" id="nlm">
+    <p><b>【待填】請把 NotebookLM 產生的摘要（100 字以上）貼在這裡。</b></p>
+    <p class="muted">建議放進 NotebookLM 的來源：</p>
+    <ol class="muted" style="font-size:14px">
+      <li>Kaggle 資料集頁面：Istanbul Apartment Prices 2026</li>
+      <li>Real estate appraisal in Istanbul with ML（REMAV 2022）：reference-global.com/download/article/10.2478/remav-2022-0025.pdf</li>
+      <li>Real Estate Market Price Prediction Model of Istanbul（ITU）：research.itu.edu.tr</li>
+      <li>Learning the Value of Place: ML Models for Real Estate Appraisal in Istanbul（Ankara Univ.）</li>
+      <li>NYC Data Science Academy：Predictive Modeling – House Prices Prediction</li>
+      <li>Research on Housing Prices Forecasts Based on a Multiple Linear Regression（SciTePress 2024）</li>
+    </ol>
+    <p class="muted" style="font-size:14px">建議提示詞：「請比較這些來源預測房價的方法，整理它們的特徵選擇方式、使用的模型、評估指標與主要結論，並寫成 150 字的中文摘要。」</p>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">HW2 · 物聯網 · 資料：Kaggle「Istanbul Apartment Prices 2026」（brahimenesulusoy）· 模型：OLS（statsmodels）· 部署：GitHub Pages</div></footer>
+
+<script src="model.js"></script>
+<script>
+(function(){
+  const M = window.MODEL;
+  // derive repo URL when hosted on GitHub Pages: https://USER.github.io/REPO/
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (m){ const repo = location.pathname.split("/").filter(Boolean)[0] || (m[1]+".github.io");
+    const base = `https://github.com/${m[1]}/${repo}`;
+    document.getElementById("repoLink").href = base;
+    document.getElementById("nbLink").href = base + "/blob/main/HW2_MLR_CRISP-DM.ipynb"; }
+  const fmt = v => (v/1e6).toLocaleString("zh-TW",{maximumFractionDigits:2}) + " M";
+  const f3 = v => (v==null||isNaN(v)) ? "–" : v.toFixed(3);
+  // header stats
+  const fin = M.metrics["MLR stepwise (final)"], slr = M.metrics["SLR (log_net_sqm)"];
+  document.getElementById("stats").innerHTML = [
+    ["24,767","原始筆數"],[M.columns.length-1+"","最終模型欄位數"],
+    [f3(fin.R2),"測試集 R²（log）"],[(M.pi_coverage*100).toFixed(1)+"%","95% PI 覆蓋率"],
+    [fin["MedAPE_price_%"].toFixed(1)+"%","價格中位數誤差"]
+  ].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+  document.getElementById("nte").textContent = M.n_test.toLocaleString();
+  document.getElementById("cov").textContent = (M.pi_coverage*100).toFixed(1)+"%";
+  document.getElementById("dropped").innerHTML = "Stepwise 刪除的群組：<code>"+M.dropped_groups.join("</code>、<code>")+"</code>；保留 "+M.selected_groups.length+" 個群組（"+(M.columns.length-1)+" 個欄位）作為最終模型。";
+  // comparison table
+  const keys = ["R2","adjR2","RMSE_log","MAE_log","MAPE_price_%","MedAPE_price_%","CV5_R2","n_features"];
+  const head = ["模型","R²","Adj R²","RMSE","MAE","MAPE %","MedAPE %","CV5 R²","特徵數"];
+  let h = "<tr>"+head.map(x=>`<th>${x}</th>`).join("")+"</tr>";
+  for (const [name, m] of Object.entries(M.metrics)){
+    h += `<tr class="${name.includes('final')?'best':''}"><td>${name}</td>` + keys.map(k=>{
+      const v=m[k]; return `<td class="num">${k==="n_features"?v:(v==null||isNaN(v)?"–":(k.includes("%")?v.toFixed(1):v.toFixed(4)))}</td>`}).join("")+"</tr>";
+  }
+  document.getElementById("cmp").innerHTML = h;
+
+  // predictor form
+  const has = c => M.columns.includes(c);
+  const fields = [
+    {id:"net_sqm",label:"淨面積 net (m²)",type:"number",v:95,min:25,max:500},
+    {id:"gross_sqm",label:"總面積 gross (m²)",type:"number",v:110,min:25,max:600},
+    {id:"rooms",label:"房間數",type:"number",v:2,min:1,max:10},
+    {id:"halls",label:"客廳數",type:"number",v:1,min:0,max:4},
+    {id:"bathroom_count",label:"衛浴數",type:"number",v:1,min:1,max:6},
+    {id:"floor",label:"所在樓層（地下為負）",type:"number",v:2,min:-3,max:60},
+    {id:"total_floors",label:"建物總樓層",type:"number",v:5,min:1,max:60},
+    {id:"building_age",label:"屋齡（年）",type:"number",v:6,min:0,max:100},
+  ];
+  const labels = {district:"行政區",heating:"暖氣",deed:"產權",condition:"屋況",furnished:"家具",usage:"使用狀態"};
+  const defaults = {district:"Kadıköy",heating:"Combi Boiler",deed:"Condominium Title",condition:"Missing",furnished:"Unfurnished",usage:"Vacant"};
+  const flags = [["is_in_complex","位於社區（complex）內",0],["has_maint_fee","有管理費",0],["credit","可申請房貸",1],["exchange_yes","接受交換",0]];
+  const form = document.getElementById("form");
+  let html = fields.map(f=>`<div><label for="${f.id}">${f.label}</label><input id="${f.id}" type="number" value="${f.v}" min="${f.min}" max="${f.max}"></div>`).join("");
+  for (const g of Object.keys(M.categories)){
+    html += `<div><label for="${g}">${labels[g]||g}</label><select id="${g}">`+M.categories[g].map(l=>`<option ${l===defaults[g]?"selected":""}>${l}</option>`).join("")+"</select></div>";
+  }
+  html += flags.filter(([c])=>has(c)).map(([c,l,d])=>`<div class="chk"><input type="checkbox" id="${c}" ${d?"checked":""}><label for="${c}" style="margin:0;color:inherit">${l}</label></div>`).join("");
+  form.innerHTML = html;
+
+  function val(id){ const e=document.getElementById(id); return e ? (e.type==="checkbox" ? (e.checked?1:0) : (e.tagName==="SELECT"? e.value : parseFloat(e.value))) : null; }
+  function predict(){
+    const raw = {};
+    const net=val("net_sqm"), gross=Math.max(val("gross_sqm"),net), floor=val("floor"), tf=Math.max(val("total_floors"),1);
+    raw.const=1; raw.log_net_sqm=Math.log(net); raw.gross_sqm=gross;
+    raw.rooms=val("rooms"); raw.halls=val("halls"); raw.bathroom_count=val("bathroom_count");
+    raw.floor=floor; raw.total_floors=tf; raw.building_age=val("building_age");
+    raw.floor_ratio=Math.min(Math.max(Math.max(floor,0)/tf,0),1);
+    for (const [c] of flags) raw[c]=val(c) ?? 0;
+    for (const g of Object.keys(M.categories)) raw[g+"_"+val(g)] = 1;
+    const x = M.columns.map(c => raw[c] ?? 0);
+    let yhat=0; for (let i=0;i<x.length;i++) yhat += x[i]*M.coef[i];
+    let q=0; for (let i=0;i<x.length;i++){ let s=0; for (let j=0;j<x.length;j++) s+=M.cov[i][j]*x[j]; q+=x[i]*s; }
+    const seM=Math.sqrt(q), seP=Math.sqrt(M.sigma2+q), t=M.t975;
+    const P=Math.exp(yhat), ci=[Math.exp(yhat-t*seM),Math.exp(yhat+t*seM)], pi=[Math.exp(yhat-t*seP),Math.exp(yhat+t*seP)];
+    document.getElementById("o_pt").textContent = fmt(P)+" TRY";
+    document.getElementById("o_ci").textContent = fmt(ci[0])+" – "+fmt(ci[1]);
+    document.getElementById("o_pi").textContent = fmt(pi[0])+" – "+fmt(pi[1]);
+    document.getElementById("o_sqm").textContent = Math.round(P/net).toLocaleString()+" TRY/m²";
+    // bar (log scale)
+    const lo=Math.log(pi[0])-0.15, hi=Math.log(pi[1])+0.15, pos=v=>((Math.log(v)-lo)/(hi-lo)*100)+"%";
+    const bar=document.getElementById("bar");
+    bar.querySelector(".pi").style.cssText=`left:${pos(pi[0])};right:calc(100% - ${pos(pi[1])})`;
+    bar.querySelector(".ci").style.cssText=`left:${pos(ci[0])};right:calc(100% - ${pos(ci[1])})`;
+    bar.querySelector(".pt").style.left=pos(P);
+    document.getElementById("b_lo").textContent=fmt(pi[0]); document.getElementById("b_hi").textContent=fmt(pi[1]);
+  }
+  form.addEventListener("input", predict); form.addEventListener("change", predict);
+  predict();
+})();
+</script>
+</body>
+</html>
