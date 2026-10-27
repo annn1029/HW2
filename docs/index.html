@@ -57,6 +57,8 @@ tr.best td{font-weight:700}
 .tag{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;margin-right:6px}
 .callout{border-left:4px solid var(--warm);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0}
 .callout.ai{border-color:var(--acc)}
+.callout.nlm{border-color:#16a34a}
+.callout.nlm h4{margin:14px 0 4px;font-size:16px}
 .placeholder{border:2px dashed var(--warm);border-radius:10px;padding:16px;background:var(--panel)}
 code,.mono{font-family:"JetBrains Mono",monospace;font-size:.92em}
 /* predictor */
@@ -323,19 +325,21 @@ nav.toc .links{display:flex;gap:18px}
     <li>完整對話紀錄：<code>docs/chat_log.pdf</code>。</li>
   </ul>
   <h3><span class="tag">NotebookLM 摘要</span>網路上同主題解法的研究摘要</h3>
-  <div class="placeholder" id="nlm">
-    <p><b>【待填】請把 NotebookLM 產生的摘要（100 字以上）貼在這裡。</b></p>
-    <p class="muted">建議放進 NotebookLM 的來源：</p>
-    <ol class="muted" style="font-size:14px">
-      <li>Kaggle 資料集頁面：Istanbul Apartment Prices 2026</li>
-      <li>Real estate appraisal in Istanbul with ML（REMAV 2022）：reference-global.com/download/article/10.2478/remav-2022-0025.pdf</li>
-      <li>Real Estate Market Price Prediction Model of Istanbul（ITU）：research.itu.edu.tr</li>
-      <li>Learning the Value of Place: ML Models for Real Estate Appraisal in Istanbul（Ankara Univ.）</li>
-      <li>NYC Data Science Academy：Predictive Modeling – House Prices Prediction</li>
-      <li>Research on Housing Prices Forecasts Based on a Multiple Linear Regression（SciTePress 2024）</li>
-    </ol>
-    <p class="muted" style="font-size:14px">資料集 B 可另加：Kaggle「Human-AI Interaction」與「Human Trust Levels in AI Systems」資料集頁面、Springer〈Human AI trust modeling in cognitive systems via ensemble learning〉（2026）、arXiv〈Trust in AI emerges from distrust in humans〉。</p>
-    <p class="muted" style="font-size:14px">建議提示詞：「請比較這些來源預測房價的方法，整理它們的特徵選擇方式、使用的模型、評估指標與主要結論，並寫成 150 字的中文摘要。」</p>
+  <div class="callout nlm" id="nlm">
+    <p style="margin-top:0"><span class="tag">NotebookLM 摘要</span><b>以下內容由 Google NotebookLM 生成</b>（來源：本專案說明 PDF 與網路上同主題的研究／解法），作者僅將格式轉為網頁，未修改文字內容。</p>
+    <h4>網路上同主題解法之研究摘要與比較</h4>
+    <p>針對網路上關於房價預測與 AI 信任度多元線性回歸（Multiple Linear Regression, MLR）的相關解法，研究重點與成果彙整如下：</p>
+    <h4>1. 房價預測與特徵選擇（Dataset A 主題）</h4>
+    <ul>
+      <li><b>資料轉譯與洩漏防範</b>：根據 IDEAS/RePEc 與 Marmara University 的研究，網路上針對土耳其及伊斯坦堡房地產資料集建模時，普遍採用對數轉換（log transformation）來平滑高通膨導致的房價右偏現象，並強調必須剔除每平方米單價（price per square meter）等衍生指標，避免產生資料洩漏（data leakage）。</li>
+      <li><b>特徵選擇方法</b>：TCSISR 的研究比較了 Stepwise AIC、Lasso 與 Elastic Net 在高維度房屋屬性上的表現。研究指出，地段（行政區 dummy 變數）與房屋淨面積對數是影響房價最具解釋力的特徵；利用正則化回歸（Lasso）或 Stepwise AIC 能有效降低變數維度與多重共線性問題，與本專案 Stepwise AIC 篩選後維持 R² ≈ 0.803 的結論完全一致。</li>
+    </ul>
+    <h4>2. 人機互動與 AI 信任度預測（Dataset B 主題）</h4>
+    <ul>
+      <li><b>關鍵預測因子分析</b>：Journal of Archetype 發表針對 Kaggle 人機互動資料集的多元回歸分析顯示，個人的<b>信任歷史（trust_history, β = .485）</b>是影響 AI 信任度的最強正向因子，而<b>認知負荷（cognitive_load, β = −.151）</b>與系統錯誤率則會顯著降低信任度，整體模型解釋力落在 25%–30% 之間。</li>
+      <li><b>技術與情境屬性</b>：arXiv 的大規模實驗亦證實，系統的模型準確率（accuracy）、偏誤程度與介面複雜度（UI complexity）是決定信任度的核心技術因素；相反地，使用者的年齡、技術經驗等個人人口統計變數對信任度的影響極微，此結論與本專案 Stepwise AIC 剔除人口變數後的結果高度吻合。</li>
+    </ul>
+    <p><b>核心觀察與建議</b>：網路上同主題研究印證了本專案在 CRISP-DM 流程中的決策正當性，包括利用群組化特徵選擇保持類別變數完整性、避免資料洩漏，以及採用預測區間（Prediction Intervals）呈現單一物件或分數的不確定性。這份網路研究摘要可直接引用納入專案報告的相關工作（Related Work）或討論章節中。</p>
   </div>
 </section>
 </main>

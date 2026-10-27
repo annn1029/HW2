@@ -73,4 +73,4 @@ Settings → Pages → Source 選 **Deploy from a branch**，Branch 選 `main`�
 
 ## AI 協助說明
 - **GPT 輔助內容**：程式架構、特徵工程、圖表與報告文字初稿由 AI 助理（Claude）協助產生，作者負責檢閱與執行；對話紀錄見 `docs/chat_log.pdf`。
-- **NotebookLM 摘要**：見網頁中的「AI 協助紀錄」區塊。
+- **NotebookLM 摘要**：由 Google NotebookLM 生成的「網路上同主題解法之研究摘要與比較」，全文見網頁「AI 協助紀錄」區塊（標示為 NotebookLM 生成）。
