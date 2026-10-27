@@ -74,9 +74,24 @@ input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-rad
 .bar .ci{position:absolute;top:0;bottom:0;background:var(--acc);opacity:.75;border-radius:7px}
 .bar .pt{position:absolute;top:-4px;width:3px;height:22px;background:var(--warm)}
 footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;color:var(--muted);font-size:14px}
+.dsbar{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.dsbar select{width:auto;max-width:70vw;padding:5px 8px;font-size:14px;font-weight:600;border-color:var(--acc);color:var(--acc);background:var(--panel)}
+nav.toc .links{display:flex;gap:18px}
+[hidden]{display:none !important}
 </style>
 </head>
 <body>
+<nav class="toc"><div class="wrap">
+  <span class="dsbar"><select id="dsSel" aria-label="選擇資料集">
+    <option value="istanbul">資料集 A｜伊斯坦堡公寓房價</option>
+    <option value="trust">資料集 B｜人機互動信任分數</option>
+  </select></span>
+  <span class="links" data-ds="istanbul"><a href="#bu">1 商業理解</a><a href="#du">2 資料理解</a><a href="#dp">3 資料準備</a><a href="#mo">4 建模</a><a href="#ev">5 評估</a><a href="#de">6 部署・估價器</a></span>
+  <span class="links" data-ds="trust" hidden><a href="#t-bu">1 商業理解</a><a href="#t-du">2 資料理解</a><a href="#t-dp">3 資料準備</a><a href="#t-mo">4 建模</a><a href="#t-ev">5 評估</a><a href="#t-de">6 部署・預測器</a></span>
+  <a href="#ai">AI 協助</a>
+</div></nav>
+
+<div data-ds="istanbul">
 <header class="hero"><div class="wrap">
   <div class="kicker">IoT · HW2 · Multiple Linear Regression · CRISP-DM</div>
   <h1>伊斯坦堡公寓房價預測：<br>多元線性回歸與預測區間</h1>
@@ -85,11 +100,6 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
   <p class="muted" style="margin-top:14px;font-size:14px">資料來源：<a href="https://www.kaggle.com/datasets/brahimenesulusoy/istanbul-apartment-prices-2026" target="_blank" rel="noopener">kaggle.com/datasets/brahimenesulusoy/istanbul-apartment-prices-2026</a>
   ・ 原始碼：<a href="#" id="repoLink">GitHub repo</a> ・ <a href="#" id="nbLink">Notebook</a></p>
 </div></header>
-
-<nav class="toc"><div class="wrap">
-  <a href="#bu">1 商業理解</a><a href="#du">2 資料理解</a><a href="#dp">3 資料準備</a><a href="#mo">4 建模</a><a href="#ev">5 評估</a><a href="#de">6 部署・估價器</a><a href="#ai">AI 協助</a>
-</div></nav>
-
 <main class="wrap">
 
 <div class="callout ai"><span class="tag">GPT 輔助內容</span>本頁的程式架構、特徵工程設計、圖表程式與報告文字初稿由 AI 助理協助產生（本作業使用 Claude），作者負責檢閱、執行與修正。對話紀錄 PDF 見 <code>docs/chat_log.pdf</code>。</div>
@@ -189,6 +199,118 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
   </div>
 </section>
 
+</main>
+</div>
+
+<div data-ds="trust" hidden>
+<header class="hero"><div class="wrap">
+  <div class="kicker">IoT · HW2 · Dataset B · Multiple Linear Regression · CRISP-DM</div>
+  <h1>人機互動信任分數預測：<br>哪些因素讓人信任 AI？</h1>
+  <p class="sub">以 Kaggle「Human-AI Interaction」資料集（10,100 筆、20 個特徵）預測使用者對 AI 系統的信任分數 <code>latent_trust_score</code>。依 CRISP-DM 六階段完成資料理解、清理、特徵選擇、評估，並部署為下方的信任分數預測器。</p>
+  <div class="stats" id="t_stats"></div>
+  <p class="muted" style="margin-top:14px;font-size:14px">資料來源：<a href="https://www.kaggle.com/datasets/eshaalnmalik/human-ai-interaction" target="_blank" rel="noopener">kaggle.com/datasets/eshaalnmalik/human-ai-interaction</a>
+  ・ <a href="#" class="nbLinkTrust">Notebook</a></p>
+</div></header>
+
+<main class="wrap">
+<div class="callout ai"><span class="tag">GPT 輔助內容</span>本資料集的分析程式、特徵工程與報告文字初稿由 AI 助理協助產生（本作業使用 Claude），作者負責檢閱、執行與修正。</div>
+
+<section id="t-bu">
+  <h2><span class="n">01</span>Business Understanding 商業理解</h2>
+  <p>AI 系統（推薦、醫療輔助、金融決策、自駕）能否被採用，關鍵在於使用者是否<strong>信任</strong>它：過度不信任會讓好的模型沒人用，過度信任則可能造成錯誤決策。本資料集的目標是用<strong>使用者特徵</strong>（年齡、教育、技術經驗、認知負荷）、<strong>AI 系統特性</strong>（準確率、可解釋性、偏誤、錯誤率、介面複雜度）與<strong>使用情境</strong>（領域、任務風險、時間壓力、法規嚴格度）預測信任分數，找出真正影響信任的因素。</p>
+  <ul>
+    <li><b>成功標準</b>：測試集 R² ≥ 0.65；特徵選擇後模型更精簡且表現不下降；95% 預測區間覆蓋率接近 95%。</li>
+    <li><b>應用</b>：產品團隊可以估算「準確率提升 10 個百分點」或「介面從高複雜度改成低複雜度」能換到多少信任分數。</li>
+  </ul>
+</section>
+
+<section id="t-du">
+  <h2><span class="n">02</span>Data Understanding 資料理解</h2>
+  <ul>
+    <li>14 個數值特徵、6 個類別特徵（教育程度、AI 使用經驗、介面複雜度、任務風險、應用領域、文化背景）。</li>
+    <li>每個欄位都有約 2% 的隨機缺值；如果直接刪除含缺值的列，會損失約 35% 的資料。</li>
+    <li>有 100 筆完全重複的列；<code>error_rate</code> 出現 150 筆負值（不合理）。</li>
+    <li>目標分數接近常態（平均 70.5、標準差 9.1、上限 100），<b>不需要取 log</b>。</li>
+    <li>與目標相關最高的是 <code>trust_history</code>（r ≈ 0.49），其次是準確率、偏誤、錯誤率與回饋品質；類別特徵中只有<b>介面複雜度</b>造成明顯差異。</li>
+  </ul>
+  <figure><img src="trust/assets/01_target_missing.png" alt="目標分布與缺值比例"><figcaption>左：信任分數分布；右：各欄位缺值比例（每欄約 2%）</figcaption></figure>
+  <div class="grid2">
+    <figure><img src="trust/assets/02_corr.png" alt="相關係數矩陣"><figcaption>數值特徵相關係數矩陣：model_accuracy 與 error_rate 幾乎完全負相關（r = −0.97）</figcaption></figure>
+    <figure><img src="trust/assets/04_scatter_top.png" alt="相關最高的四個特徵散佈圖"><figcaption>與信任分數相關最高的四個數值特徵</figcaption></figure>
+  </div>
+  <figure><img src="trust/assets/03_cat_box.png" alt="類別特徵箱型圖"><figcaption>各類別特徵的信任分數分布：只有 ui_complexity 有明顯差距</figcaption></figure>
+</section>
+
+<section id="t-dp">
+  <h2><span class="n">03</span>Data Preparation 資料準備</h2>
+  <div class="tbl"><table>
+    <tr><th>步驟</th><th>做法</th><th>理由</th></tr>
+    <tr><td>重複值</td><td>刪除 100 筆完全重複的列</td><td>避免同一筆資料同時出現在訓練與測試集</td></tr>
+    <tr><td>目標缺值</td><td>刪除 latent_trust_score 缺值的列</td><td>無法訓練也無法評估</td></tr>
+    <tr><td>不合理值</td><td>error_rate 截斷到 ≥ 0</td><td>錯誤率不可能為負</td></tr>
+    <tr><td>切分</td><td><b>先</b>切 80/20 訓練/測試集，<b>再</b>填補缺值</td><td>填補值只從訓練集計算，避免資料洩漏</td></tr>
+    <tr><td>缺值填補</td><td>數值用中位數、類別用眾數（都從訓練集計算）</td><td>缺值隨機且比例低</td></tr>
+    <tr><td>編碼</td><td>類別變數 one-hot（drop_first）</td><td>線性模型需要數值輸入</td></tr>
+  </table></div>
+  <p class="muted">清理後剩 9,800 筆：訓練集 7,840 筆、測試集 1,960 筆，20 個特徵展開為 30 個欄位。</p>
+</section>
+
+<section id="t-mo">
+  <h2><span class="n">04</span>Modeling 建模與特徵選擇</h2>
+  <p>依序建立：① <b>簡單線性回歸</b> trust ~ trust_history 作為基準；② <b>全特徵多元線性回歸</b>；③ 用 <b>Forward Stepwise（AIC）</b>、<b>RFE（保留 10 個欄位）</b>、<b>LassoCV</b> 三種方法做特徵選擇（方法說明同資料集 A）。</p>
+  <figure><img src="trust/assets/05_stepwise.png" alt="Stepwise 選擇過程"><figcaption>Stepwise 每一步加入的特徵：前 6 步就把 adjusted R² 從 0.23 拉到 0.69，之後幾乎不再增加</figcaption></figure>
+  <p id="t_dropped" class="muted"></p>
+  <figure><img src="trust/assets/06_lasso_coef.png" alt="Lasso 係數"><figcaption>Lasso 標準化係數（灰色＝被壓成 0）：人口統計與情境特徵的係數都接近 0</figcaption></figure>
+  <h3>最終模型係數解讀（未取 log，係數就是分數變化）</h3>
+  <ul>
+    <li><code>trust_history</code> +15.0：過去的信任經驗從 0 到 1，信任分數高 15 分，是單一最強的因素。</li>
+    <li><code>ui_complexity</code>：低複雜度介面比高複雜度高 <b>9.9 分</b>，中複雜度高 4.9 分。</li>
+    <li><code>bias_level</code> −10.1、<code>cognitive_load</code> −5.1：偏誤越大、使用者認知負荷越高，信任越低。</li>
+    <li><code>feedback_quality</code> +10.1：回饋品質好的系統更被信任。</li>
+    <li><code>model_accuracy</code> +10.5 與 <code>error_rate</code> −9.7：兩者高度共線（VIF ≈ 16），應合起來看成「準確率越高、錯誤越少，信任越高」，不宜單獨解讀其中一個係數。</li>
+  </ul>
+</section>
+
+<section id="t-ev">
+  <h2><span class="n">05</span>Evaluation 評估</h2>
+  <h3>模型比較（測試集，n = <span id="t_nte"></span>）</h3>
+  <div class="tbl"><table id="t_cmp"></table></div>
+  <p class="muted" style="font-size:14px">RMSE、MAE 單位為信任分數；CV5 為 5-fold 交叉驗證的 R²。</p>
+  <h3>預測圖（含 95% 信賴區間與預測區間）</h3>
+  <p>測試集上 95% 預測區間的實際覆蓋率為 <b id="t_cov"></b>。PI 大約是預測值 ±9.7 分，代表個別使用者之間仍有模型解釋不到的差異。</p>
+  <figure><img src="trust/assets/08_pred_interval_test.png" alt="測試集預測與信賴區間、預測區間"><figcaption>隨機抽 150 筆測試資料（依預測值排序）：深色帶為 95% CI、淺色帶為 95% PI、橘點為實際分數</figcaption></figure>
+  <figure><img src="trust/assets/10_effect_accuracy_ui.png" alt="信任分數對模型準確率的效果圖"><figcaption>信任分數隨模型準確率變化（錯誤率同步設為 1 − 準確率），三條線為不同的介面複雜度；深色帶＝CI、淺色帶＝PI</figcaption></figure>
+  <div class="grid2">
+    <figure><img src="trust/assets/09_actual_vs_pred.png" alt="實際值對預測值"><figcaption>實際分數與預測分數</figcaption></figure>
+    <figure><img src="trust/assets/07_residuals.png" alt="殘差診斷"><figcaption>殘差診斷：殘差近似常態，變異大致一致</figcaption></figure>
+  </div>
+  <h3>結論與限制</h3>
+  <ul>
+    <li>多元線性回歸將 R² 從 0.22（只用 trust_history）提升到約 0.69。</li>
+    <li>Stepwise 從 20 個特徵中只保留 9 個（10 個欄位），測試表現與 30 個欄位的全模型相同，甚至略好；RFE 選出的欄位與 Stepwise 完全相同。</li>
+    <li>年齡、教育、文化、應用領域、任務風險、時間壓力對信任<b>幾乎沒有影響</b>，真正重要的是 AI 系統本身的品質與介面設計。</li>
+    <li>限制：這是合成（synthetic）資料，信任分數在 100 被截斷；剩下約 30% 的變異可能來自非線性或交互作用，線性模型無法捕捉。</li>
+  </ul>
+</section>
+
+<section id="t-de">
+  <h2><span class="n">06</span>Deployment 部署：信任分數預測器</h2>
+  <p class="muted">只顯示最終模型用到的特徵；被特徵選擇刪除的特徵（例如年齡、領域）對預測沒有影響，所以不需要輸入。提醒：準確率與錯誤率在資料中幾乎是 1 − 對方，調整其中一個時，建議另一個也一起調整。</p>
+  <div class="pred">
+    <div class="form" id="t_form"></div>
+    <div class="out">
+      <div class="box"><span class="muted">預測信任分數</span><b id="t_pt">–</b></div>
+      <div class="box"><span class="muted">95% 信賴區間（平均分數）</span><b id="t_ci" style="font-size:18px">–</b></div>
+      <div class="box"><span class="muted">95% 預測區間（單一使用者）</span><b id="t_pi" style="font-size:18px">–</b></div>
+    </div>
+    <div class="bar" id="t_bar"><div class="pi"></div><div class="ci"></div><div class="pt"></div></div>
+    <div class="muted" style="font-size:12px;display:flex;justify-content:space-between"><span id="t_blo"></span><span>淺色＝PI，深色＝CI，橘線＝點預測</span><span id="t_bhi"></span></div>
+  </div>
+</section>
+</main>
+</div>
+
+<main class="wrap">
 <section id="ai">
   <h2><span class="n">AI</span>AI 協助紀錄</h2>
   <h3><span class="tag">GPT 輔助內容</span>AI 協助的範圍</h3>
@@ -197,6 +319,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
     <li>特徵工程與群組層級的 Stepwise-AIC 演算法、RFE／Lasso 比較的程式碼。</li>
     <li>以 statsmodels <code>get_prediction().summary_frame()</code> 計算 CI／PI 並畫出預測圖。</li>
     <li>GitHub Pages 網頁與 JavaScript 估價器（含預測區間公式）。</li>
+    <li>資料集 B：先切分再填補缺值以避免洩漏、發現 <code>model_accuracy</code>／<code>error_rate</code> 的共線性（VIF ≈ 16）、信任分數預測器，以及多資料集下拉選單。</li>
     <li>完整對話紀錄：<code>docs/chat_log.pdf</code>。</li>
   </ul>
   <h3><span class="tag">NotebookLM 摘要</span>網路上同主題解法的研究摘要</h3>
@@ -211,14 +334,16 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
       <li>NYC Data Science Academy：Predictive Modeling – House Prices Prediction</li>
       <li>Research on Housing Prices Forecasts Based on a Multiple Linear Regression（SciTePress 2024）</li>
     </ol>
+    <p class="muted" style="font-size:14px">資料集 B 可另加：Kaggle「Human-AI Interaction」與「Human Trust Levels in AI Systems」資料集頁面、Springer〈Human AI trust modeling in cognitive systems via ensemble learning〉（2026）、arXiv〈Trust in AI emerges from distrust in humans〉。</p>
     <p class="muted" style="font-size:14px">建議提示詞：「請比較這些來源預測房價的方法，整理它們的特徵選擇方式、使用的模型、評估指標與主要結論，並寫成 150 字的中文摘要。」</p>
   </div>
 </section>
 </main>
 
-<footer><div class="wrap">HW2 · 物聯網 · 資料：Kaggle「Istanbul Apartment Prices 2026」（brahimenesulusoy）· 模型：OLS（statsmodels）· 部署：GitHub Pages</div></footer>
+<footer><div class="wrap">HW2 · 物聯網 · 資料 A：Kaggle「Istanbul Apartment Prices 2026」（brahimenesulusoy）· 資料 B：Kaggle「Human-AI Interaction」（eshaalnmalik）· 模型：OLS（statsmodels）· 部署：GitHub Pages</div></footer>
 
 <script src="model.js"></script>
+<script src="trust/model.js"></script>
 <script>
 (function(){
   const M = window.MODEL;
@@ -302,6 +427,76 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
   }
   form.addEventListener("input", predict); form.addEventListener("change", predict);
   predict();
+})();
+</script>
+<script>
+(function(){
+  const T = window.MODEL_TRUST; if (!T) return;
+  const f3 = v => (v==null||isNaN(v)) ? "–" : v.toFixed(3);
+  const fin = T.metrics["MLR stepwise (final)"];
+  document.getElementById("t_stats").innerHTML = [
+    [T.n_raw.toLocaleString(),"原始筆數"],[String(T.columns.length-1),"最終模型欄位數"],
+    [f3(fin.R2),"測試集 R²"],[(T.pi_coverage*100).toFixed(1)+"%","95% PI 覆蓋率"],
+    [fin.RMSE.toFixed(2)+" 分","RMSE"]
+  ].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+  document.getElementById("t_nte").textContent = T.n_test.toLocaleString();
+  document.getElementById("t_cov").textContent = (T.pi_coverage*100).toFixed(1)+"%";
+  document.getElementById("t_dropped").innerHTML = "Stepwise 刪除的特徵：<code>"+T.dropped_groups.join("</code>、<code>")+"</code>；保留 "+T.selected_groups.length+" 個特徵（"+(T.columns.length-1)+" 個欄位）。";
+  const keys = ["R2","adjR2","RMSE","MAE","MAPE_%","CV5_R2","n_features"];
+  let h = "<tr>"+["模型","R²","Adj R²","RMSE","MAE","MAPE %","CV5 R²","特徵數"].map(x=>`<th>${x}</th>`).join("")+"</tr>";
+  for (const [name,m] of Object.entries(T.metrics)){
+    h += `<tr class="${name.includes('final')?'best':''}"><td>${name}</td>`+keys.map(k=>{const v=m[k];
+      return `<td class="num">${k==="n_features"?v:(v==null||isNaN(v)?"–":(k==="MAPE_%"?v.toFixed(2):v.toFixed(4)))}</td>`}).join("")+"</tr>";
+  }
+  document.getElementById("t_cmp").innerHTML = h;
+
+  const zh = {trust_history:"過去信任經驗 trust_history (0–1)", bias_level:"偏誤程度 bias_level (0–1)", feedback_quality:"回饋品質 feedback_quality (0–1)",
+    model_accuracy:"模型準確率 model_accuracy", cognitive_load:"認知負荷 cognitive_load (0–1)", error_rate:"錯誤率 error_rate",
+    override_frequency:"推翻 AI 次數 override_frequency", regulatory_strictness:"法規嚴格度 regulatory_strictness (1–5)",
+    ui_complexity:"介面複雜度 ui_complexity", explainability_score:"可解釋性 explainability_score", age:"年齡", domain:"應用領域",
+    technical_experience:"技術經驗（年）", task_risk:"任務風險", education_level:"教育程度", prior_ai_exposure:"AI 使用經驗",
+    cultural_factor:"文化背景", time_pressure:"時間壓力", decision_latency:"決策延遲（秒）", interaction_frequency:"互動頻率"};
+  const form = document.getElementById("t_form");
+  form.innerHTML = T.numeric.map(n=>`<div><label for="t_${n.name}">${zh[n.name]||n.name}</label><input id="t_${n.name}" type="number" step="${n.step}" min="${n.min.toFixed(2)}" max="${n.max.toFixed(2)}" value="${n.step===1?n.default:n.default.toFixed(2)}"></div>`).join("")
+    + T.categorical.map(c=>`<div><label for="t_${c.name}">${zh[c.name]||c.name}</label><select id="t_${c.name}">`+c.levels.map(l=>`<option ${l===c.default?"selected":""}>${l}</option>`).join("")+"</select></div>").join("");
+  function predict(){
+    const raw = {const:1};
+    for (const n of T.numeric) raw[n.name] = parseFloat(document.getElementById("t_"+n.name).value) || 0;
+    for (const c of T.categorical) raw[c.name+"_"+document.getElementById("t_"+c.name).value] = 1;
+    const x = T.columns.map(c => raw[c] ?? 0);
+    let y=0; for (let i=0;i<x.length;i++) y += x[i]*T.coef[i];
+    let q=0; for (let i=0;i<x.length;i++){ let s=0; for (let j=0;j<x.length;j++) s+=T.cov[i][j]*x[j]; q+=x[i]*s; }
+    const t=T.t975, seM=Math.sqrt(q), seP=Math.sqrt(T.sigma2+q);
+    const ci=[y-t*seM,y+t*seM], pi=[y-t*seP,y+t*seP];
+    document.getElementById("t_pt").textContent = y.toFixed(1)+" 分";
+    document.getElementById("t_ci").textContent = ci[0].toFixed(1)+" – "+ci[1].toFixed(1);
+    document.getElementById("t_pi").textContent = pi[0].toFixed(1)+" – "+pi[1].toFixed(1);
+    const lo=pi[0]-2, hi=pi[1]+2, pos=v=>((v-lo)/(hi-lo)*100)+"%", bar=document.getElementById("t_bar");
+    bar.querySelector(".pi").style.cssText=`left:${pos(pi[0])};right:calc(100% - ${pos(pi[1])})`;
+    bar.querySelector(".ci").style.cssText=`left:${pos(ci[0])};right:calc(100% - ${pos(ci[1])})`;
+    bar.querySelector(".pt").style.left=pos(y);
+    document.getElementById("t_blo").textContent=pi[0].toFixed(1); document.getElementById("t_bhi").textContent=pi[1].toFixed(1);
+  }
+  form.addEventListener("input", predict); form.addEventListener("change", predict);
+  predict();
+})();
+
+// ---- dataset switcher ----
+(function(){
+  const sel = document.getElementById("dsSel");
+  const titles = {istanbul:"HW2 伊斯坦堡房價多元線性回歸", trust:"HW2 人機互動信任分數多元線性回歸"};
+  function show(ds){
+    if (!titles[ds]) ds = "istanbul";
+    document.querySelectorAll("[data-ds]").forEach(el => el.hidden = el.dataset.ds !== ds);
+    sel.value = ds; document.title = titles[ds];
+    try { history.replaceState(null, "", "?ds=" + ds + location.hash); } catch(e) {}
+  }
+  sel.addEventListener("change", () => { show(sel.value); window.scrollTo({top:0}); });
+  show(new URLSearchParams(location.search).get("ds") || "istanbul");
+  // notebook link for dataset B when hosted on GitHub Pages
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (m){ const repo = location.pathname.split("/").filter(Boolean)[0] || (m[1]+".github.io");
+    document.querySelectorAll(".nbLinkTrust").forEach(a => a.href = `https://github.com/${m[1]}/${repo}/blob/main/HW2_AI_Trust_MLR.ipynb`); }
 })();
 </script>
 </body>

@@ -1,0 +1,12 @@
+,coef,p,CI_low,CI_high
+const,54.14257,0.0,50.93699,57.34814
+trust_history,15.01897,0.0,14.62494,15.41299
+ui_complexity_Low,9.92842,0.0,9.59904,10.25779
+ui_complexity_Medium,4.86736,0.0,4.56757,5.16715
+bias_level,-10.12822,0.0,-10.52601,-9.73044
+feedback_quality,10.05611,0.0,9.66325,10.44898
+model_accuracy,10.53842,0.0,7.358,13.71883
+cognitive_load,-5.0986,0.0,-5.49625,-4.70095
+error_rate,-9.69502,0.0,-12.8515,-6.53854
+override_frequency,0.03122,0.00179,0.01163,0.05081
+regulatory_strictness,0.09589,0.0188,0.0159,0.17587
